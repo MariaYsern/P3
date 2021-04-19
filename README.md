@@ -15,6 +15,26 @@ Ejercicios básicos
 
    * Complete el cálculo de la autocorrelación e inserte a continuación el código correspondiente.
 
+   > El código de la autocorrelación es:
+   >
+   > ```cpp
+   > void PitchAnalyzer::autocorrelation(const vector<float> &x, vector<float> &r) const {
+   > 
+   >    for (unsigned int l = 0; l < r.size(); ++l) {
+   >   		/// \TODO Compute the autocorrelation r[l]
+   >      /// \DONE Autocorrelation *computed*
+   >      /// - r[l] = sumatorio de n = l a x.size() de x[n] * x[n-l];
+   >      r[l] = 0;
+   >      for(unsigned int n = l; n < x.size(); n++){
+   >        r[l] += x[n] * x[n - l];
+   >      }
+   >    }
+   > 
+   >     if (r[0] == 0.0F) //to avoid log() and divide zero 
+   >       r[0] = 1e-10; 
+   > }
+	 > ```
+
    * Inserte una gŕafica donde, en un *subplot*, se vea con claridad la señal temporal de un segmento de
      unos 30 ms de un fonema sonoro y su periodo de pitch; y, en otro *subplot*, se vea con claridad la
 	 autocorrelación de la señal y la posición del primer máximo secundario.
@@ -24,6 +44,61 @@ Ejercicios básicos
 
    * Determine el mejor candidato para el periodo de pitch localizando el primer máximo secundario de la
      autocorrelación. Inserte a continuación el código correspondiente.
+
+   > El código de para buscar el pitch de una trama consiste en encontrar la diferencia (lag) entre el origen y el primer máximo secundario de la autocorrelación. Si la trama es no sonora, no tiene sentido devolver ningún valor, así que se retorna un 0. En cambio, si es sonora se devuelve el pitch: frecuencia de muestreo/lag. El código empleado es:
+   >
+   > ```cpp
+   > float PitchAnalyzer::compute_pitch(vector<float> & x) const {
+   >     if (x.size() != frameLen)
+   >       return -1.0F;
+   > 
+   >     //Window input frame
+   >     for (unsigned int i=0; i<x.size(); ++i)
+   >       x[i] *= window[i];
+   > 
+   >     vector<float> r(npitch_max);
+   > 
+   >     //Compute correlation
+   >     autocorrelation(x, r);
+   > 
+   >     vector<float>::const_iterator iR = r.begin(), iRMax = iR + npitch_min;
+   > 
+   >     /// \TODO 
+   > 	/// Find the lag of the maximum value of the autocorrelation away from the origin.<br>
+   > 	/// Choices to set the minimum value of the lag are:
+   > 	///    - The first negative value of the autocorrelation.
+   > 	///    - The lag corresponding to the maximum value of the pitch.
+   >     ///	   .
+   > 	/// In either case, the lag should not exceed that of the minimum value of the pitch.
+   >     /// \DONE
+   >   /// Se busca el lag entre los valores mínimo y máximo de pitch.
+   > 
+   >     for(iR = r.begin() + npitch_min; iR < r.begin() + npitch_max; iR++){
+   >       if(*iR > *iRMax){
+   >         iRMax = iR;
+   >       }
+   >     }
+   > 
+   >     unsigned int lag = iRMax - r.begin();
+   > 
+   >     float pot = 10 * log10(r[0]);
+   > 
+   >     //You can print these (and other) features, look at them using wavesurfer
+   >     //Based on that, implement a rule for unvoiced
+   >     //change to #if 1 and compile
+   > #if 1
+   >     if (r[0] > 0.0F)
+   >       cout << pot << '\t' << r[1]/r[0] << '\t' << r[lag]/r[0] << endl;
+   > #endif
+   >     
+   >     if (unvoiced(pot, r[1]/r[0], r[lag]/r[0]))
+   >       return 0;
+   >     else
+   >       return (float) samplingFreq/(float) lag;
+   >   }
+   > }
+   > ```
+
 
    * Implemente la regla de decisión sonoro o sordo e inserte el código correspondiente.
 
