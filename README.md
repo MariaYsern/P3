@@ -21,7 +21,7 @@ Ejercicios básicos
    > void PitchAnalyzer::autocorrelation(const vector<float> &x, vector<float> &r) const {
    > 
    >    for (unsigned int l = 0; l < r.size(); ++l) {
-   >   		/// \TODO Compute the autocorrelation r[l]
+   >      /// \TODO Compute the autocorrelation r[l]
    >      /// \DONE Autocorrelation *computed*
    >      /// - r[l] = sumatorio de n = l a x.size() de x[n] * x[n-l];
    >      r[l] = 0;
@@ -41,6 +41,12 @@ Ejercicios básicos
 
 	 NOTA: es más que probable que tenga que usar Python, Octave/MATLAB u otro programa semejante para
 	 hacerlo. Se valorará la utilización de la librería matplotlib de Python.
+
+   > Se ha escogido la séptima trama del audio rl001.wav (de la base de entrenamiento) ya que es en gran parte sonora:
+   >
+   > <img src="img/P3_signal_corr.png" width="640" align="center">
+   >
+   > Se puede comprobar que el primer máximo secundario concuerda con el valor de la frecuencia de muestreo entre el pitch (marcado con en rojo en el segundo *subplot*).
 
    * Determine el mejor candidato para el periodo de pitch localizando el primer máximo secundario de la
      autocorrelación. Inserte a continuación el código correspondiente.
@@ -102,6 +108,39 @@ Ejercicios básicos
 
    * Implemente la regla de decisión sonoro o sordo e inserte el código correspondiente.
 
+   > Para implementar la regla de decisión, primero se ha optimizado el valor del umbral para cada característica por separado. Se ha obtenido:
+   >
+   > - Para la autocorrelación normalizada de uno:
+   >
+   > <img src="img/r1norm_optimizada.png" width="640" align="center">
+   >
+   > - Para la autocorrelación en su máximo secundario:
+   >
+   > <img src="img/rmaxnorm_optimizada.png" width="640" align="center">
+   >
+   > - Para la potencia:
+   >
+   > <img src="img/pot_optimizada.png" width="640" align="center">
+   >
+   > - Para la combinación escogida entre las dos primeras:
+   >
+   > <img src="img/comb2_optimizada.png" width="640" align="center">
+   >
+   > El código es el siguiente:
+   >
+   > ```cpp
+   > bool PitchAnalyzer::unvoiced(float pot, float r1norm, float rmaxnorm) const {
+   >   /// \TODO Implement a rule to decide whether the sound is voiced or not.
+   >   /// * You can use the standard features (pot, r1norm, rmaxnorm),
+   >   ///   or compute and use other ones.
+   >   /// \DONE Se ha usado la r1norm y la rmaxnorm
+   > 
+   >   if(r1norm<0.88 || rmaxnorm<0.445)
+   >     return true;
+   >   return false;
+   > }
+   > ```
+
 - Una vez completados los puntos anteriores, dispondrá de una primera versión del detector de pitch. El 
   resto del trabajo consiste, básicamente, en obtener las mejores prestaciones posibles con él.
 
@@ -124,7 +163,7 @@ Ejercicios básicos
   
   * Optimice los parámetros de su sistema de detección de pitch e inserte una tabla con las tasas de error
     y el *score* TOTAL proporcionados por `pitch_evaluate` en la evaluación de la base de datos 
-	`pitch_db/train`..
+	`pitch_db/train`.
 
    * Inserte una gráfica en la que se vea con claridad el resultado de su detector de pitch junto al del
      detector de Wavesurfer. Aunque puede usarse Wavesurfer para obtener la representación, se valorará

@@ -33,7 +33,10 @@ namespace upc {
     switch (win_type) {
     case HAMMING:
       /// \TODO Implement the Hamming window
-      //break;
+      /// \DONE Ventana de Hamming implementada
+      for (unsigned int i = 1; i < frameLen; i++)
+        window[i] = 0.53836 - 0.46164 * cos(2 * PI * i / (frameLen - 1));
+      break;
     case RECT:
     default:
       window.assign(frameLen, 1);
@@ -56,7 +59,9 @@ namespace upc {
     /// \TODO Implement a rule to decide whether the sound is voiced or not.
     /// * You can use the standard features (pot, r1norm, rmaxnorm),
     ///   or compute and use other ones.
-    if(r1norm<0.6)
+    /// \DONE Se ha usado la r1norm y la rmaxnorm
+
+    if(r1norm<0.88 || rmaxnorm<0.425)
       return true;
     return false;
   }
@@ -101,12 +106,12 @@ namespace upc {
     //change to #if 1 and compile
 #if 1
     if (r[0] > 0.0F){
-      //cout << pot << '\t' << r[1]/r[0] << '\t' << r[lag]/r[0] << endl;
-      cout << r[0];
+      cout << pot << '\t' << r[1]/r[0] << '\t' << r[lag]/r[0] << endl;
+      /*cout << r[0];
       for(unsigned int i = 1; i < r.size(); i++){
         cout << '\t' << r[i];
       }
-      cout << endl;
+      cout << endl;*/
     }
 
 #endif
