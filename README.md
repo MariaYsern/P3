@@ -42,11 +42,54 @@ Ejercicios básicos
 	 NOTA: es más que probable que tenga que usar Python, Octave/MATLAB u otro programa semejante para
 	 hacerlo. Se valorará la utilización de la librería matplotlib de Python.
 
-   > Se ha escogido la séptima trama del audio rl001.wav (de la base de entrenamiento) ya que es en gran parte sonora:
+   > Se ha escogido la séptima trama del audio 'rl001.wav' (de la base de entrenamiento) ya que es en gran parte sonora:
    >
    > <img src="img/P3_signal_corr.png" width="640" align="center">
    >
    > Se puede comprobar que el primer máximo secundario concuerda con el valor de la frecuencia de muestreo entre el pitch (marcado con en rojo en el segundo *subplot*).
+   >
+   > Estas gráficas se han programado con Python. Este es el código:
+   >
+   > ```py
+   > # Imports necessarios
+   > import numpy as np
+   > import matplotlib as mpl
+   > import matplotlib.pyplot as plt
+   > from scipy.io import wavfile as wav
+   > 
+   > # Abrir los ficheros
+   > audio_filename = 'rl001.wav'
+   > correlation_filename = 'autocorreletion.txt'
+   > fs, data_audio = wav.read(audio_filename)
+   > data_corr = np.loadtxt(correlation_filename, delimiter='\t', skiprows=0,)
+   > 
+   > # Queremos representar la séptima trama ya que sabemos que es sonora
+   > tin = int(0.15*6*fs)
+   > tfin = int((0.15*6+0.3)*fs)
+   > t = np.zeros(tfin-tin)
+   > for i in range(tfin-tin):
+   >   t[i] = 0.15*6 + i*0.3/(tfin-tin)
+   > 
+   > # Para marcar un periodo de la señal
+   > data_pitch = np.zeros(tfin-tin)
+   > data_pitch[3846:4024] = data_audio[21846:22024]
+   > plot_audio = plt.subplot(211)
+   > plot_audio.plot(t, data_audio[tin:tfin], label='Complete signal')
+   > plot_audio.plot(t, data_pitch, 'r', label='One period of the signal (0.0089 s)')
+   > plot_audio.set_xlabel("$Time (s)$", fontsize=12)
+   > plot_audio.set_ylabel("$Amplitude$", fontsize=12)
+   > plot_audio.set_title("Signal in time", fontsize=14)
+   > plot_audio.legend(loc='upper left', shadow=True, fontsize=14)
+   > plot_corr = plt.subplot(212)
+   > plot_corr.plot(data_corr[6,:], label='Autocorrelation')
+   > plot_corr.plot(fs/138.889,3.6,'r*',markersize=10, label='Fs/Pitch obtained (138.889)')
+   > plot_corr.set_xlabel("$n$", fontsize=12)
+   > plot_corr.set_ylabel("$Amplitude$", fontsize=12)
+   > plot_corr.set_title("Autocorrelation", fontsize=14)
+   > plot_corr.legend(loc='upper right', shadow=True, fontsize=14)
+   > plt.tight_layout()
+   > plt.show()
+   > ```
 
    * Determine el mejor candidato para el periodo de pitch localizando el primer máximo secundario de la
      autocorrelación. Inserte a continuación el código correspondiente.
@@ -108,23 +151,7 @@ Ejercicios básicos
 
    * Implemente la regla de decisión sonoro o sordo e inserte el código correspondiente.
 
-   > Para implementar la regla de decisión, primero se ha optimizado el valor del umbral para cada característica por separado. Se ha obtenido:
-   >
-   > - Para la autocorrelación normalizada de uno:
-   >
-   > <img src="img/r1norm_optimizada.png" width="640" align="center">
-   >
-   > - Para la autocorrelación en su máximo secundario:
-   >
-   > <img src="img/rmaxnorm_optimizada.png" width="640" align="center">
-   >
-   > - Para la potencia:
-   >
-   > <img src="img/pot_optimizada.png" width="640" align="center">
-   >
-   > - Para la combinación escogida entre las dos primeras:
-   >
-   > <img src="img/comb2_optimizada.png" width="640" align="center">
+   > Para implementar la regla de decisión, primero se ha representado una señal de prueba junto la potencia, la autocorrelación normalizada en 1 y la normalizada en el primer máximo secundario, tal como se muestra en la siguiente pregunta. Se ha visto que la **potencia** es útil para saber si el locutor está hablando pero no para detectar la sonoridad (por ejemplo el tramo entre 0.95 y 1 segundo es sordo pero la potencia es elevada). En cambio, las **autocorrelaciones** detectan bastante bien si el tramo es sonoro pero no si se está hablando (por ejemplo, a partir de los 4 segundos no hay voz pero sus valores son elevados). Por lo tanto, se debe buscar si uno de los tres valores es bajo para determinar que el tramo es sordo.
    >
    > El código es el siguiente:
    >
@@ -133,9 +160,9 @@ Ejercicios básicos
    >   /// \TODO Implement a rule to decide whether the sound is voiced or not.
    >   /// * You can use the standard features (pot, r1norm, rmaxnorm),
    >   ///   or compute and use other ones.
-   >   /// \DONE Se ha usado la r1norm y la rmaxnorm
+   >   /// \DONE Se ha usado una comninación de la potencia, la r1norm y la rmaxnorm
    > 
-   >   if(r1norm<0.88 || rmaxnorm<0.445)
+   >   if(r1norm<0.88 || rmaxnorm<0.445 || pot < -22)
    >     return true;
    >   return false;
    > }
@@ -157,18 +184,74 @@ Ejercicios básicos
 	    Recuerde configurar los paneles de datos para que el desplazamiento de ventana sea el adecuado, que
 		en esta práctica es de 15 ms.
 
+    > La gráfica obtenida para el audio 'rl001.wav' es:
+    >
+    > <img src="img/señal_wavesurfer_características.png" width="640" align="center">
+    >
+    > Podemos observar que ninguno de los tres candidatos por separado es un buen detector de sonoridad porque cuando uno falla otro acierta. Está más explicado en la pregunta anterior.
+
       - Use el detector de pitch implementado en el programa `wavesurfer` en una señal de prueba y compare
-	    su resultado con el obtenido por la mejor versión de su propio sistema.  Inserte una gráfica
+	    su resultado con el obtenido por la mejor versión de su propio sistema. Inserte una gráfica
 		ilustrativa del resultado de ambos detectores.
+
+    > La gráfica obtenida para el audio 'rl001.wav' es:
+    >
+    > <img src="img/señal_wavesurfer_comparación.png" width="640" align="center">
+    >
+    > En general detecta bien la sonoridad y el pitch cuando corresponde pero hay algunas zonas (sobre los 1.15 segundos) que las detecta como no sonoras cuando no lo son y una donde ocurre lo contrario (sobre los 0.65 segundos) por lo que detecta una frecuencia que claramente no corresponde con el audio.
   
   * Optimice los parámetros de su sistema de detección de pitch e inserte una tabla con las tasas de error
     y el *score* TOTAL proporcionados por `pitch_evaluate` en la evaluación de la base de datos 
 	`pitch_db/train`.
 
+    > Los valores que indican que la trama es no sonora y con los que se ha conseguido mejor resultado son:
+    >
+    > - **Potencia** menor a -22 dB.
+    >
+    > - **Autocorrelación normalizada de 1** menor a 0.88
+    >
+    > - **Autocorrelación normalizada en su primer máximo secundario** menor a 0.425
+    >
+    > Si se cumple cualquiera de las tres condiciones se considera que la trama no es sonora. Las tasas de error conseguidas son:
+    >
+    > <img src="img/comb3_optimizada.png" width="640" align="center">
+
    * Inserte una gráfica en la que se vea con claridad el resultado de su detector de pitch junto al del
      detector de Wavesurfer. Aunque puede usarse Wavesurfer para obtener la representación, se valorará
 	 el uso de alternativas de mayor calidad (particularmente Python).
-   
+
+   > Tal como se ha comentado en el ejircicio anterior en general son muy parecidas pero hay errores en nuestro detector:
+   >
+   > <img src="img/comparación_pitch.png" width="640" align="center">
+   >
+   > El código usado para representar la comparación es:
+   > ``` py
+   > # Imports necessarios
+   > import numpy as np
+   > import matplotlib as mpl
+   > import matplotlib.pyplot as plt
+   > from scipy.io import wavfile as wav
+   > 
+   > # Abrir los ficheros
+   > pitch_filename = 'rl001_results.txt'
+   > pitch_wavesurfer_filename = 'rl001_wavesurfer.txt'
+   > pitch = np.loadtxt(pitch_filename, skiprows=0,)
+   > pitch_wavesurfer = np.loadtxt(pitch_wavesurfer_filename, skiprows=0,)
+   > 
+   > # Crear vector temporal (entre cada muestra hay 15 ms)
+   > t = np.zeros(len(pitch))
+   > for i in range(len(pitch)):
+   >   t[i] = 0.015*i
+   > 
+   > # Representar las dos señales
+   > plt.plot(t, pitch, 'b', label="Pitch detector")
+   > plt.plot(t, pitch_wavesurfer, 'r', label="Wavesurfer detector")
+   > plt.xlabel("$Time (s)$", fontsize=12)
+   > plt.ylabel("$Frequency (Hz)$", fontsize=12)
+   > plt.title("Results of both pitch detectors", fontsize=14)
+   > plt.legend(loc='upper right', shadow=True, fontsize=14)
+   > plt.show()
+   > ```
 
 Ejercicios de ampliación
 ------------------------
