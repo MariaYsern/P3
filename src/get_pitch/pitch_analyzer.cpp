@@ -35,7 +35,7 @@ namespace upc {
       /// \TODO Implement the Hamming window
       /// \DONE Ventana de Hamming implementada
       for (unsigned int i = 1; i < frameLen; i++)
-        window[i] = 0.53836 - 0.46164 * cos(2 * PI * i / (frameLen - 1));
+        window[i] = 0.53836 - 0.46164 * cos(2 * M_PI * i / (frameLen - 1));
       break;
     case RECT:
     default:
@@ -61,7 +61,7 @@ namespace upc {
     ///   or compute and use other ones.
     /// \DONE Se ha usado una comninación de la potencia, la r1norm y la rmaxnorm
 
-    if(r1norm < 0.88 || rmaxnorm < 0.425 || pot < -22)
+    if(r1norm < r1norm_th || rmaxnorm < rmaxnorm_th || pot < pot_th)
       return true;
     return false;
   }
@@ -104,7 +104,7 @@ namespace upc {
     //You can print these (and other) features, look at them using wavesurfer
     //Based on that, implement a rule for unvoiced
     //change to #if 1 and compile
-#if 1
+#if 0
     if (r[0] > 0.0F){
       cout << pot << '\t' << r[1]/r[0] << '\t' << r[lag]/r[0] << endl;
       /*cout << r[0];
