@@ -59,7 +59,7 @@ namespace upc {
     /// \TODO Implement a rule to decide whether the sound is voiced or not.
     /// * You can use the standard features (pot, r1norm, rmaxnorm),
     ///   or compute and use other ones.
-    /// \DONE Se ha usado una comninación de la potencia, la r1norm y la rmaxnorm
+    /// \DONE Se ha usado una combinación de la potencia, la r1norm y la rmaxnorm
 
     if(r1norm < r1norm_th || rmaxnorm < rmaxnorm_th || pot < pot_th)
       return true;
@@ -88,8 +88,7 @@ namespace upc {
 	///    - The lag corresponding to the maximum value of the pitch.
     ///	   .
 	/// In either case, the lag should not exceed that of the minimum value of the pitch.
-    /// \DONE
-  /// Se busca el lag entre los valores mínimo y máximo de pitch.
+    /// \DONE Se busca el lag entre los valores mínimo y máximo de pitch.
 
     for(iR = r.begin() + npitch_min; iR < r.begin() + npitch_max; iR++){
       if(*iR > *iRMax){
@@ -106,12 +105,12 @@ namespace upc {
     //change to #if 1 and compile
 #if 0
     if (r[0] > 0.0F){
-      cout << pot << '\t' << r[1]/r[0] << '\t' << r[lag]/r[0] << endl;
-      /*cout << r[0];
+      //cout << pot << '\t' << r[1]/r[0] << '\t' << r[lag]/r[0] << endl;
+      cout << r[0];
       for(unsigned int i = 1; i < r.size(); i++){
         cout << '\t' << r[i];
       }
-      cout << endl;*/
+      cout << endl;
     }
 
 #endif

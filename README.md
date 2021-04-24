@@ -266,6 +266,21 @@ Ejercicios de ampliación
   * Inserte un *pantallazo* en el que se vea el mensaje de ayuda del programa y un ejemplo de utilización
     con los argumentos añadidos.
 
+   > El mensaje de ayuda del programa es:
+   >
+   > <img src="img/docopt_ayuda.png" width="640" align="center">
+   >
+   > Se pueden escoger los umbrales para el center clipping y para la decisión de sonoridad de la trama (potencia en dB, autocorrelación en 1 y autocorrelación en el primer máximo secundario).
+   > 
+   > Un ejemplo sin utilizar los parámetros:
+   >
+   > <img src="img/docopt_noparam.png" width="640" align="center">
+   >
+   > Un ejemplo utilizando los parámetros:
+   >
+   > <img src="img/docopt_conparam.png" width="640" align="center">
+   >
+
 - Implemente las técnicas que considere oportunas para optimizar las prestaciones del sistema de detección
   de pitch.
 
@@ -289,6 +304,44 @@ Ejercicios de ampliación
   También se valorará la realización de un estudio de los parámetros involucrados. Por ejemplo, si se opta
   por implementar el filtro de mediana, se valorará el análisis de los resultados obtenidos en función de
   la longitud del filtro.
+
+  > En el detector se ha incluido una técnica de preprocesado y otra de postprocesado para optimizar el sistema. Como técnica de preprocesado se ha implementado el *center clipping* con offset, que consiste en anular los valores los valores de la señal menores a un cierto umbral. Con esto se consigue eliminar la cola reverberante de la voz, aumentar la robustez frente al ruido y, como es con offset, la función de transformación es continua. Para escoger el valor del umbral, 'xth', se ha añadido una opción en el docopt que por defecto es 0.0003.
+  >
+  > El código es:
+  >
+  > ```cpp
+  > for (unsigned int i = 0; i < x.size(); i++){
+  >   if (x[i] > xth)
+  >     x[i] = x[i] - xth;
+  >   else if (x[i] < -1 * xth)
+  >     x[i] = x[i] + xth;
+  >   else
+  >     x[i] = 0;
+  > }
+  > ```
+  >
+  > Como técnica de postprocesado se ha implementado el filtro de mediana de longitud 3. Con este filtrado se consigue eliminar los valores atípicos de pitch, es decir disminuir los *gross errors*. Esta es una comparación entre el pitch conseguido para una trama con y sin el filtro:
+  >
+  > <img src="img/pitch_filtromediana.png" width="640" align="center">
+  >
+  > Se puede ver como se han corregido los errores y ahora se parece más a la gráfica del detector de 'wavesurfer'.
+  >
+  > El código es:
+  >
+  > ```cpp
+  > for (unsigned int i = 1; i < f0.size()-1; i++){
+  >   vector<float> aux;
+  >   aux.push_back(f0[i-1]);
+  >   aux.push_back(f0[i]);
+  >   aux.push_back(f0[i+1]);
+  >   std::sort (aux.begin(), aux.end());
+  >   f0[i] = aux[1];
+  > }
+  > ```
+  >
+  > Con estas mejoras se ha conseguido una puntuación del **89,32%**, un 0,01% menor que la obtenida sin las mejoras pero se ha disminuido los *gross voiced errors* en un 0,39%.
+  >
+  > <img src="img/final_score.png" width="640" align="center">
    
 
 Evaluación *ciega* del detector

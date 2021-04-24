@@ -43,6 +43,9 @@ int main(int argc, const char *argv[]) {
 	/// \TODO 
 	///  Modify the program syntax and the call to **docopt()** in order to
 	///  add options and arguments to the program.
+  /// \DONE
+  ///  Opciones añadidas: escoger el umbral para la potencia (pot, en dB), las dos
+  ///  autocorrelaciones normalizadas (r1norm y rmaxnorm) y el center clipping (xth)
     std::map<std::string, docopt::value> args = docopt::docopt(USAGE,
         {argv + 1, argv + argc},	// array of arguments, without the program name
         true,    // show help if requested
@@ -74,7 +77,7 @@ int main(int argc, const char *argv[]) {
   /// central-clipping or low pass filtering may be used.
   /// \DONE
   /// Center-clipping con offset implementado
-
+  
   for (unsigned int i = 0; i < x.size(); i++){
     if (x[i] > xth)
       x[i] = x[i] - xth;
